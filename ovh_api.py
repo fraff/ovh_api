@@ -80,12 +80,6 @@ def main():
     method = module.params.get('method').lower()
     body = module.params.get('body')
 
-#    module.warn(method)
-#    print json.dumps({
-#        "time" : str(datetime.datetime.now())
-#    })
-
-
     if module.check_mode:
         module.fail_json(msg="Check Mode is not supported.")
 
@@ -100,7 +94,6 @@ def main():
     try:
         result = mydict['func'][method](path, **body)
         module.exit_json(changed=mydict['code'][method], result=result)
-        # TODO try to get http code from result
 
     except APIError as apiError:
         module.fail_json(changed=False, msg="OVH API Error: {0}".format(apiError))
