@@ -72,16 +72,13 @@ def main():
             method = dict(required=False, default='GET', choices=['GET', 'POST', 'PUT', 'DELETE'], aliases=['action']),
             body = dict(required=False, default={}, type=dict, aliases=['data'])
         ),
-        supports_check_mode = True
+        supports_check_mode = False
     )
 
     # Get parameters
     path = module.params.get('path')
     method = module.params.get('method').lower()
     body = module.params.get('body')
-
-    if module.check_mode:
-        module.fail_json(msg="Check Mode is not supported.")
 
     # Connect to OVH API
     client = ovh.Client()
