@@ -1,8 +1,5 @@
-<!--
-<meta name="google-site-verification" content="U8lM812DV554z25tlR6uJ11lHSqBYu8gmDgp3GS8OHs" />
-<meta name="google-site-verification" content="DJIgbTdY6cUvC-kNPsRlGH3iqJtYj6bRewbcKh1fE44" />
--->
-# ovh_api
+
+# [ovh_api](https://github.com/fraff/ovh_api)
 Minimalist ansible python module wrapper around OVH api and ovh python module
 
 # exemples
