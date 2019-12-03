@@ -2,7 +2,7 @@
 Minimalist ansible python module wrapper around OVH api and ovh python module
 
 # exemples
-
+```
       - name: get dedicated servers list
         ovh_api:
           path: "/dedicated/server"
