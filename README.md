@@ -3,7 +3,7 @@
 Minimalist ansible python module wrapper around OVH api and ovh python module
 
 # exemples
-
+```
       - name: get dedicated servers list
         ovh_api:
           path: "/dedicated/server"
@@ -25,4 +25,4 @@ Minimalist ansible python module wrapper around OVH api and ovh python module
           path: "/dedicated/server/{{ result3.result | random }}/reboot"
           method: "POST"
         when: result3 is not failed and result3.result is defined
-
+```
