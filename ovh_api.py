@@ -18,6 +18,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
+ANSIBLE_METADATA = {
+    "metadata_version": "1.1",
+    "status": ["preview"],
+    "supported_by": "community",
+}
+
 DOCUMENTATION = '''
 ---
 module: ovh_api
@@ -60,20 +70,26 @@ try:
     import ovh
     import ovh.exceptions
     from ovh.exceptions import APIError
+    HAS_OVH = True
 except ImportError:
-    print "failed=True msg='ovh required for this module'"
+    HAS_OVH = False
+    print("failed=True msg='ovh required for this module'")
     sys.exit(1)
 
+from ansible.module_utils.basic import AnsibleModule
 
 def main():
     module = AnsibleModule(
         argument_spec = dict(
             path = dict(required=True),
             method = dict(required=False, default='GET', choices=['GET', 'POST', 'PUT', 'DELETE'], aliases=['action']),
-            body = dict(required=False, default={}, type=dict, aliases=['data'])
+            body = dict(required=False, default={}, type='dict', aliases=['data'])
         ),
         supports_check_mode = False
     )
+
+    if not HAS_OVH:
+        module.fail_json(msg='ovh-api python module is required to run this module ')
 
     # Get parameters
     path = module.params.get('path')
@@ -91,6 +107,7 @@ def main():
     try:
         result = mydict['func'][method](path, **body)
         module.exit_json(changed=mydict['code'][method], result=result)
+        # TODO try to get http code from result
 
     except APIError as apiError:
         module.fail_json(changed=False, msg="OVH API Error: {0}".format(apiError))
@@ -100,6 +117,7 @@ def main():
 
 
 # import module snippets
-from ansible.module_utils.basic import *
+# from ansible.module_utils.basic import *
 
-main()
+if __name__ == "__main__":
+    main()
