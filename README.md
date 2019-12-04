@@ -27,3 +27,6 @@ Minimalist ansible python module wrapper around OVH api and ovh python module
           path: "/dedicated/server/{{ result3.result | random }}/reboot"
           method: "POST"
 
+```
+ansible -m ovh_api -a "method=GET path=/me" localhost
+```
