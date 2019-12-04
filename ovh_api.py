@@ -73,8 +73,6 @@ try:
     HAS_OVH = True
 except ImportError:
     HAS_OVH = False
-    print("failed=True msg='ovh required for this module'")
-    sys.exit(1)
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -107,17 +105,12 @@ def main():
     try:
         result = mydict['func'][method](path, **body)
         module.exit_json(changed=mydict['code'][method], result=result)
-        # TODO try to get http code from result
 
     except APIError as apiError:
         module.fail_json(changed=False, msg="OVH API Error: {0}".format(apiError))
 
     # We should never reach here
     module.fail_json(msg='Internal ovh_api module error')
-
-
-# import module snippets
-# from ansible.module_utils.basic import *
 
 if __name__ == "__main__":
     main()
