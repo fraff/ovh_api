@@ -92,7 +92,7 @@ def main():
     )
 
     if not HAS_OVH:
-        module.fail_json(msg='ovh-python module is required to run this module, see https://github.com/ovh/python-ovh')
+        module.fail_json(msg='python-ovh is required to run this module, see https://github.com/ovh/python-ovh')
 
     # Get parameters
     path = module.params.get('path')
