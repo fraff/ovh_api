@@ -31,16 +31,16 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ovh_api
-author: Francois (fraff) Lallart
+author: Francois Lallart (@fraff)
 short_description: Minimalist wrapper around OVH api and ovh python module
 description:
-    - Enable 
+    - Minimalist wrapper around OVH api and ovh python module
 requirements: [ "ovh" ]
 options:
     path
         required: true
         description:
-            - https://api.ovh.com/console/{path}
+            - https://api.ovh.com/console/{path} don't forget to replace / with %2f
     method:
         required: true
         choices: ['GET', 'POST', 'PUT', 'DELETE']
@@ -55,12 +55,17 @@ options:
 '''
 
 EXAMPLES = '''
-# basic
+# list your cloud projects
 - ovh_api: path="/cloud/project"
+
+# set a reverse to your x.x.x.x/29 ip block
 - ovh_api:
     path: "/ip/x.x.x.x%2f29/reverse"
     method: "POST"
     body: {'ipReverse': 'y.y.y.y', reverse: 'my.cool.reverse'}
+
+# get info about yourself
+- ovh_api: method=GET path=/me
 '''
 
 import os
