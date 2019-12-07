@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # ovh_api, an Ansible module for accessing ovh api
@@ -31,25 +31,31 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ovh_api
+version_added: "2.10"
 author: Francois Lallart (@fraff)
 short_description: Minimalist wrapper around OVH api and ovh python module
 description:
     - Minimalist wrapper around OVH api and ovh python module
 requirements: [ "ovh" ]
 options:
-    path
+    path:
         required: true
+        type: str
         description:
             - https://api.ovh.com/console/{path} don't forget to replace / with %2f
     method:
-        required: true
+        required: false
+        type: str
         choices: ['GET', 'POST', 'PUT', 'DELETE']
+        default: GET
         aliases: ['action']
         description:
             - obvious
     body:
         required: false
-        default: 
+        type: dict
+        default:
+        aliases: ['data']
         description:
             - use this body if required
 '''
@@ -68,6 +74,9 @@ EXAMPLES = '''
 - ovh_api: method=GET path=/me
 '''
 
+RETURN = '''
+'''
+
 import os
 import sys
 
@@ -81,14 +90,15 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
-            path = dict(required=True),
-            method = dict(required=False, default='GET', choices=['GET', 'POST', 'PUT', 'DELETE'], aliases=['action']),
-            body = dict(required=False, default={}, type='dict', aliases=['data'])
+        argument_spec=dict(
+            path=dict(required=True),
+            method=dict(required=False, default='GET', choices=['GET', 'POST', 'PUT', 'DELETE'], aliases=['action']),
+            body=dict(required=False, default={}, type='dict', aliases=['data'])
         ),
-        supports_check_mode = False
+        supports_check_mode=False
     )
 
     if not HAS_OVH:
@@ -116,6 +126,7 @@ def main():
 
     # We should never reach here
     module.fail_json(msg='Internal ovh_api module error')
+
 
 if __name__ == "__main__":
     main()
