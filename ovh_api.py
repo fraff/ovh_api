@@ -1,22 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# ovh_api, an Ansible module for accessing ovh api
-# Copyright (C) 2019, Francois Lallart <fraff@free.fr>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+# Copyright: (c) 2019, Francois Lallart (@fraff)
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
 
@@ -35,7 +21,7 @@ version_added: "2.10"
 author: Francois Lallart (@fraff)
 short_description: Minimalist wrapper around OVH api and ovh python module
 description:
-    - Minimalist wrapper around OVH api and ovh python module
+    - Minimalist wrapper around OVH api and ovh python module, see https://api.ovh.com/console for more informations.
 requirements: [ "ovh" ]
 options:
     path:
@@ -44,27 +30,39 @@ options:
         description:
             - https://api.ovh.com/console/{path} don't forget to replace / with %2f
     method:
-        required: false
         type: str
         choices: ['GET', 'POST', 'PUT', 'DELETE']
-        default: GET
+        default: 'GET'
         aliases: ['action']
         description:
-            - obvious
+            - what method to use
     body:
-        required: false
         type: dict
         default:
         aliases: ['data']
         description:
             - use this body if required
+    endpoint:
+        type: str
+        description:
+            - The endpoint to use (for instance ovh-eu)
+    application_key:
+        type: str
+        description:
+            - The applicationKey to use
+    application_secret:
+        type: str
+        description:
+            - The application secret to use
+    consumer_key:
+        type: str
+        description:
+            - The consumer key to use
 '''
 
 EXAMPLES = '''
-# list your cloud projects
+# basic
 - ovh_api: path="/cloud/project"
-
-# set a reverse to your x.x.x.x/29 ip block
 - ovh_api:
     path: "/ip/x.x.x.x%2f29/reverse"
     method: "POST"
@@ -79,6 +77,7 @@ RETURN = '''
 
 import os
 import sys
+import traceback
 
 try:
     import ovh
@@ -87,8 +86,18 @@ try:
     HAS_OVH = True
 except ImportError:
     HAS_OVH = False
+    OVH_IMPORT_ERROR = traceback.format_exc()
 
 from ansible.module_utils.basic import AnsibleModule
+
+
+def ordered(obj):
+    if isinstance(obj, dict):
+        return sorted((k, ordered(v)) for k, v in obj.items())
+    if isinstance(obj, list):
+        return sorted(ordered(x) for x in obj)
+    else:
+        return obj
 
 
 def main():
@@ -96,7 +105,11 @@ def main():
         argument_spec=dict(
             path=dict(required=True),
             method=dict(required=False, default='GET', choices=['GET', 'POST', 'PUT', 'DELETE'], aliases=['action']),
-            body=dict(required=False, default={}, type='dict', aliases=['data'])
+            body=dict(required=False, default={}, type='dict', aliases=['data']),
+            endpoint=dict(required=False),
+            application_key=dict(required=False, no_log=True),
+            application_secret=dict(required=False, no_log=True),
+            consumer_key=dict(required=False, no_log=True),
         ),
         supports_check_mode=False
     )
@@ -108,9 +121,18 @@ def main():
     path = module.params.get('path')
     method = module.params.get('method').lower()
     body = module.params.get('body')
+    endpoint = module.params.get('endpoint')
+    application_key = module.params.get('application_key')
+    application_secret = module.params.get('application_secret')
+    consumer_key = module.params.get('consumer_key')
 
     # Connect to OVH API
-    client = ovh.Client()
+    client = ovh.Client(
+        endpoint=endpoint,
+        application_key=application_key,
+        application_secret=application_secret,
+        consumer_key=consumer_key
+    )
 
     mydict = {
         'func': {'get': client.get, 'put': client.put, 'post': client.post, 'delete': client.delete},
@@ -118,8 +140,19 @@ def main():
     }
 
     try:
-        result = mydict['func'][method](path, **body)
-        module.exit_json(changed=mydict['code'][method], result=result)
+        if method in ['put', 'post', 'delete']:
+            old = mydict['func']['get'](path, **body)
+            result = mydict['func'][method](path, **body)
+            new = mydict['func']['get'](path, **body)
+            changed = (ordered(old) != ordered(new))
+#            module.warn("old: " + str(old['name']))
+#            module.warn("new: " + str(new['name']))
+#            module.warn(str(changed))
+            module.exit_json(changed=changed, result=result)
+
+        else:
+            result = mydict['func'][method](path, **body)
+            module.exit_json(changed=mydict['code'][method], result=result)
 
     except APIError as apiError:
         module.fail_json(changed=False, msg="OVH API Error: {0}".format(apiError))
