@@ -84,7 +84,17 @@ EXAMPLES = '''
     body: {'ipReverse': 'y.y.y.y', reverse: 'my.cool.reverse'}
 '''
 
-RETURN = '''
+RETURN = r'''
+result:
+    description: Raw response from Ovh API, content varies with API.
+    returned: success
+    type: dict
+    sample: {"firstname": "Francois", "name": "Lallart", "organisation": "@fraff", "language": "fr_FR", "city": "Lille", "country": "FR"}
+msg:
+    description: Module error message.
+    returned: failure
+    type: str
+    sample: "OVH API Error: Got an invalid (or empty) URL"
 '''
 
 import os
